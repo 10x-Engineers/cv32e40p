@@ -43,10 +43,10 @@ The gcc toolchain has already been built in the linked gcc toolchain with the cu
 
 You can setup the toolchain using the following steps.
 
-1. Clone the gcc toolchain and build it as directed in the (`Readme`) of the riscV gcc toolchain repository linked [here](https://github.com/riscv-collab/riscv-gnu-toolchain).
-2. After building the toolchain, two files need to be updated in order to add the BF16 custom instructions, (`binutils/include/opcode/riscv-opc.h`) and (`binutils/opcodes/riscv-opc.c`).
+1. Clone the gcc toolchain and build it as directed in the `Readme` of the riscV gcc toolchain repository linked [here](https://github.com/riscv-collab/riscv-gnu-toolchain).
+2. After building the toolchain, two files need to be updated in order to add the BF16 custom instructions, `binutils/include/opcode/riscv-opc.h` and `binutils/opcodes/riscv-opc.c`.
 
-   Add the following lines in (`riscv-opc.h`)
+   Add the following lines in `riscv-opc.h`
    ```sh
     #define MATCH_BF16_MAX 0x7c000053
     #define MASK_BF16_MAX 0xfe00707f
@@ -73,7 +73,7 @@ You can setup the toolchain using the following steps.
     #define MASK_BF16_FMNSUB 0x600007f
    ```
 
-   Add the following code to (`riscv-opc.c`) under (`const struct riscv_opcode riscv_opcodes[] ={`)
+   Add the following code to `riscv-opc.c` under `const struct riscv_opcode riscv_opcodes[] ={`
    ```sh
     {"bf16.min",     0, INSN_CLASS_ZFH_INX,   "D,S,T",     MATCH_BF16_MIN, MASK_BF16_MIN, match_opcode, 0 },
     {"bf16.max",     0, INSN_CLASS_ZFH_INX,   "D,S,T",     MATCH_BF16_MAX, MASK_BF16_MAX, match_opcode, 0 },
@@ -102,23 +102,23 @@ You can setup the toolchain using the following steps.
    git clone https://github.com/10x-Engineers/core-v-verif.git
    ```
    Checkout to the Bf16_Optimized branch.
-2. Navigate to the (`core-v-cores`) folder and clone [this](https://github.com/10x-Engineers/cv32e40p/tree/BF16_Optimized) repository in it.
+2. Navigate to the `core-v-cores` folder and clone [this](https://github.com/10x-Engineers/cv32e40p/tree/BF16_Optimized) repository in it.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Running a simple program
 If you have verilator and gtkwave installed, move to the steps below. If not then install verilator from [here](https://verilator.org/guide/latest/install.html). Install gtkwave from [here](https://sourceforge.net/projects/gtkwave/)
 
-1. Tests for cv32e40p are located in (`cv32e40p/tests/programs/custom`). To run a simple test with BF16 custom instructions, we will run the scrap test present in (`cv32e40p/tests/programs/custom/scrap`). For that, use the command:
+1. Tests for cv32e40p are located in `core-v-verif/cv32e40p/tests/programs/custom`. To run a simple test with BF16 custom instructions, we will run the scrap test present in `cv32e40p/tests/programs/custom/scrap`. For that, use the command:
 ```sh
    make test TEST=scrap
 ```
 This test runs all BF16 instructions one after the other.
-2. To view the waveform, navigate to (`cv32e40p/tests/programs/custom/scrap`) and run the command:
+2. To view the waveform, navigate to `cv32e40p/tests/programs/custom/scrap` and run the command:
 ```sh
 gtkwave verilator_tb.vcd
 ```
-For other make options, check out (`Available Test Programs`) in the (`Readme`) [here](https://github.com/10x-Engineers/core-v-verif/tree/master/mk)
+For other make options, check out `Available Test Programs` in the `Readme` [here](https://github.com/10x-Engineers/core-v-verif/tree/master/mk)
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -136,7 +136,6 @@ The custom instrcutions can be used as assembly or in inline assembly. The forma
 * **fnmadd**: bf16.fnmadd fd,fs1,fs2,fs3
 * **fnmsub**: bf16.fnmsub fd,fs1,fs2,fs3
 
-Example tests are given in the core-v-verif repository.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
