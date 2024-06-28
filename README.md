@@ -43,7 +43,7 @@ The gcc toolchain has already been built in the linked gcc toolchain with the cu
 
 You can setup the toolchain using the following steps.
 
-1. Clone the gcc toolchain and build it as directed in the readme of the riscV gcc toolchain repository linked [here](https://github.com/riscv-collab/riscv-gnu-toolchain).
+1. Clone the gcc toolchain and build it as directed in the (`Readme`) of the riscV gcc toolchain repository linked [here](https://github.com/riscv-collab/riscv-gnu-toolchain).
 2. After building the toolchain, two files need to be updated in order to add the BF16 custom instructions, (`binutils/include/opcode/riscv-opc.h`) and (`binutils/opcodes/riscv-opc.c`).
 
    Add the following lines in (`riscv-opc.h`)
@@ -101,13 +101,24 @@ You can setup the toolchain using the following steps.
    ```sh
    git clone https://github.com/10x-Engineers/core-v-verif.git
    ```
-2. Now checkout to the Bf16_Optimized branch. This branch contains the verification environment along with cv32e40p + BF16 RTL under core-v-cores folder.
-
+   Checkout to the Bf16_Optimized branch.
+2. Navigate to the (`core-v-cores`) folder and clone [this](https://github.com/10x-Engineers/cv32e40p/tree/BF16_Optimized) repository in it.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Running a simple program
+If you have verilator and gtkwave installed, move to the steps below. If not then install verilator from [here](https://verilator.org/guide/latest/install.html). Install gtkwave from [here](https://sourceforge.net/projects/gtkwave/)
 
+1. Tests for cv32e40p are located in (`cv32e40p/tests/programs/custom`). To run a simple test with BF16 custom instructions, we will run the scrap test present in (`cv32e40p/tests/programs/custom/scrap`). For that, use the command:
+```sh
+   make test TEST=scrap
+```
+This test runs all BF16 instructions one after the other.
+2. To view the waveform, navigate to (`cv32e40p/tests/programs/custom/scrap`) and run the command:
+```sh
+gtkwave verilator_tb.vcd
+```
+For other make options, check out (`Available Test Programs`) in the (`Readme`) [here](https://github.com/10x-Engineers/core-v-verif/tree/master/mk)
 
 <!-- USAGE EXAMPLES -->
 ## Usage
