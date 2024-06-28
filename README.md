@@ -39,23 +39,69 @@ This work was presented in the Risc-V Europe Summit 2024. The paper and poster w
 The gcc toolchain has already been built in the linked gcc toolchain with the custom instructions included. The verification enviroment has been set in core-v-verif with the cv32e40p containing the fpu under the core-v-cores folder in the repository. This has been done for ease of setup.
 
 
-### Setting up toolchain and verification environement
+### Setting up toolchain
 
-You can setup the toolchain and verification environment using the following steps.
+You can setup the toolchain using the following steps.
 
-1. Clone the post-built gcc toolchain repo from here (which is already setup with custom instructions) into a folder that is writeable 
-  ```sh
-   git clone https://github.com/10x-Engineers/Optimized_BF16_GCC.git
-   ```
-2. Now add the toolchain to your path. (Note: this is post built, so you do not need to build it, just add it's folder to your path). Like if you clone it in opt/riscv then add opt/riscv/Optimized_BF16_GCC/bin to your path.
+1. Clone the gcc toolchain and build it as directed in the readme of the riscV gcc toolchain repository linked [here](https://github.com/riscv-collab/riscv-gnu-toolchain).
+2. After building the toolchain, two files need to be updated in order to add the BF16 custom instructions, (`binutils/include/opcode/riscv-opc.h`) and (`binutils/opcodes/riscv-opc.c`).
+
+   Add the following lines in (`riscv-opc.h`)
    ```sh
-   export PATH=$PATH:/path/to/bin/directory
+    #define MATCH_BF16_MAX 0x7c000053
+    #define MASK_BF16_MAX 0xfe00707f
+    #define MATCH_BF16_MIN 0x6c000053
+    #define MASK_BF16_MIN 0xfe00707f
+    
+    #define MATCH_BF16_FP32_CONV 0x44800053
+    #define MASK_BF16_FP32_CONV 0xfff0007f
+    #define MATCH_FP32_BF16_CONV 0x40600053
+    #define MASK_FP32_BF16_CONV 0xfff0007f
+    
+    #define MATCH_BF16_ADD 0x400006b
+    #define MASK_BF16_ADD 0xfe00007f
+    #define MATCH_BF16_SUB 0x400007b
+    #define MASK_BF16_SUB 0xfe00007f
+    
+    #define MATCH_BF16_FMADD 0x400001b
+    #define MASK_BF16_FMADD 0x600007f
+    #define MATCH_BF16_FMSUB 0x400002b
+    #define MASK_BF16_FMSUB 0x600007f
+    #define MATCH_BF16_FMNADD 0x400003b
+    #define MASK_BF16_FMNADD 0x600007f
+    #define MATCH_BF16_FMNSUB 0x400005b
+    #define MASK_BF16_FMNSUB 0x600007f
    ```
-3. Clone the core-v-verif repository.
+
+   Add the following code to (`riscv-opc.c`) under (`const struct riscv_opcode riscv_opcodes[] ={`)
+   ```sh
+    {"bf16.min",     0, INSN_CLASS_ZFH_INX,   "D,S,T",     MATCH_BF16_MIN, MASK_BF16_MIN, match_opcode, 0 },
+    {"bf16.max",     0, INSN_CLASS_ZFH_INX,   "D,S,T",     MATCH_BF16_MAX, MASK_BF16_MAX, match_opcode, 0 },
+    {"bf16.fp32.conv",   0, INSN_CLASS_ZFHMIN_INX, "D,S",     MATCH_BF16_FP32_CONV|MASK_RM, MASK_BF16_FP32_CONV|MASK_RM, match_opcode, 0 },
+    {"bf16.fp32.conv",   0, INSN_CLASS_ZFHMIN_INX, "D,S,m",   MATCH_BF16_FP32_CONV, MASK_BF16_FP32_CONV, match_opcode, 0 },
+    {"fp32.bf16.conv",   0, INSN_CLASS_ZFHMIN_INX, "D,S",     MATCH_FP32_BF16_CONV, MASK_FP32_BF16_CONV|MASK_RM, match_opcode, 0 },
+    {"bf16.add",     0, INSN_CLASS_ZFH_INX,   "D,S,T",     MATCH_BF16_ADD|MASK_RM, MASK_BF16_ADD|MASK_RM, match_opcode, 0 },
+    {"bf16.add",     0, INSN_CLASS_ZFH_INX,   "D,S,T,m",   MATCH_BF16_ADD, MASK_BF16_ADD, match_opcode, 0 },
+    {"bf16.sub",     0, INSN_CLASS_ZFH_INX,   "D,S,T",     MATCH_BF16_SUB|MASK_RM, MASK_BF16_SUB|MASK_RM, match_opcode, 0 },
+    {"bf16.sub",     0, INSN_CLASS_ZFH_INX,   "D,S,T,m",   MATCH_BF16_SUB, MASK_BF16_SUB, match_opcode, 0 },
+    
+    {"bf16.fmadd",    0, INSN_CLASS_ZFH_INX,   "D,S,T,R",   MATCH_BF16_FMADD|MASK_RM, MASK_BF16_FMADD|MASK_RM, match_opcode, 0 },
+    {"bf16.fmadd",    0, INSN_CLASS_ZFH_INX,   "D,S,T,R,m", MATCH_BF16_FMADD, MASK_BF16_FMADD, match_opcode, 0 },
+    {"bf16.fmsub",    0, INSN_CLASS_ZFH_INX,   "D,S,T,R",   MATCH_BF16_FMSUB|MASK_RM, MASK_BF16_FMSUB|MASK_RM, match_opcode, 0 },
+    {"bf16.fmsub",    0, INSN_CLASS_ZFH_INX,   "D,S,T,R,m", MATCH_BF16_FMSUB, MASK_BF16_FMSUB, match_opcode, 0 },
+    {"bf16.fnmadd",   0, INSN_CLASS_ZFH_INX,   "D,S,T,R",   MATCH_BF16_FMNADD|MASK_RM, MASK_BF16_FMNADD|MASK_RM, match_opcode, 0 },
+    {"bf16.fnmadd",   0, INSN_CLASS_ZFH_INX,   "D,S,T,R,m", MATCH_BF16_FMNADD, MASK_BF16_FMNADD, match_opcode, 0 },
+    {"bf16.fnmsub",   0, INSN_CLASS_ZFH_INX,   "D,S,T,R",   MATCH_BF16_FMNSUB|MASK_RM, MASK_BF16_FMNSUB|MASK_RM, match_opcode, 0 },
+    {"bf16.fnmsub",   0, INSN_CLASS_ZFH_INX,   "D,S,T,R,m", MATCH_BF16_FMNSUB, MASK_BF16_FMNSUB, match_opcode, 0 },
+   ```
+3. After updating both the files, build the toolchain again. Now the RISC-V toolchain has been modified to provide compilation support for newly added      BF16 instructions.
+
+### Setting up verification environement
+1. Clone the core-v-verif repository.
    ```sh
    git clone https://github.com/10x-Engineers/core-v-verif.git
    ```
-   Now checkout to the Bf16_Optimized branch. This branch contains the verification environment along with cv32e40p + BF16 RTL under core-v-cores folder.
+2. Now checkout to the Bf16_Optimized branch. This branch contains the verification environment along with cv32e40p + BF16 RTL under core-v-cores folder.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
